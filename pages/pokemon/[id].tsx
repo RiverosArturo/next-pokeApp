@@ -126,7 +126,8 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
       params: { id },
     })),
     //usamos false para que si la persona busca un id que no este en la lista de arriba nos de un error 404.
-    fallback: false,
+    //fallback: false,
+    fallback: "blocking",
   };
 };
 
@@ -135,10 +136,22 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   // console.log(ctx.params);
   //Obtenemos nuestro id
   const { id } = ctx.params as { id: string };
+  const pokemon = await getPokemonInfo(id);
+
+  if (!pokemon) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
-      pokemon: await getPokemonInfo(id),
+      pokemon,
     },
+    revalidate: 86400, //60 * 60 * 24 cada 24horas
   };
 };
 
